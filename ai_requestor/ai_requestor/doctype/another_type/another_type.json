@@ -1,0 +1,61 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-02-24 17:01:19.574671",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_tmit",
+  "first_name",
+  "last_name",
+  "birthdate"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_tmit",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "First Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Text",
+   "label": "Last Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "birthdate",
+   "fieldtype": "Datetime",
+   "label": "Birthdate"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-02-24 17:04:41.799134",
+ "modified_by": "Administrator",
+ "module": "Ai Requestor",
+ "name": "Another Type",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
