@@ -141,8 +141,8 @@ def ai_query():
 
     response = requests.post(f'{local_server_url}/api/ai-query', json=data, stream=True)
     def stream_generator():
-        for chunk in response.iter_lines():
-            yield chunk
+        for chunk in response.iter_content(chunk_size=None):
+            yield chunk 
 
     return Response(stream_generator(), content_type='application/json') 
     
