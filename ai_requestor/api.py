@@ -82,6 +82,27 @@ def get_schema():
     return schema
 
 @frappe.whitelist(allow_guest=True)
+def ai_suggest():
+    if frappe.request.method != "POST":
+        frappe.throw('Only POST requests are allowed')
+
+    schema = get_schema()
+
+    # Remove 'tab' prefix from table names
+    schema = {k.removeprefix('tab'): v for k, v in schema.items()}
+    data = {
+        "schema": schema
+    }
+
+    local_server_url = os.getenv('LOCAL_SERVER_URL')
+    response = requests.post(f'{local_server_url}/api/ai-suggest', json=data, stream=True)
+    def stream_generator():
+        for chunk in response.iter_content(chunk_size=None):
+            yield chunk
+
+    return Response(stream_generator(), content_type='application/json') 
+
+@frappe.whitelist(allow_guest=True)
 def ai_query():
     """
     Retrieves schema and data from database tables, excluding default system fields.
@@ -125,7 +146,7 @@ def ai_query():
             
             if filtered_records:  # Only include table if it has records with non-null values
                 body.append({
-                    'table': table,
+                    'table': table.removeprefix('tab'),
                     'data': filtered_records
                 })
 
