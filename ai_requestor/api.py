@@ -6,17 +6,6 @@ import os
 
 from frappe.utils.response import Response
 
-def serialize_dict(data):
-    if isinstance(data, dict):
-        return {key: serialize_dict(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [serialize_dict(item) for item in data]
-    else:
-        return data
-
-def recursive_serialize(data):
-    return json.dumps(serialize_dict(data))
-
 def get_tables():
     return frappe.db.sql("""
         SELECT name 
@@ -82,11 +71,32 @@ def get_schema():
     return schema
 
 @frappe.whitelist(allow_guest=True)
+def run_query():
+    if frappe.request.method != "POST":
+        frappe.throw('Only POST requests are allowed')
+
+    # Get and validate request data
+    request_data = frappe.request.get_json()
+    if not request_data or 'query' not in request_data:
+        frappe.throw('Missing ["query"] in request body')
+
+    # Execute query
+    result = frappe.db.sql(request_data['query'], as_dict=True)
+    return result
+
+@frappe.whitelist(allow_guest=True)
 def ai_suggest():
     if frappe.request.method != "POST":
         frappe.throw('Only POST requests are allowed')
 
     schema = get_schema()
+
+    # Get and validate request data
+    request_data = frappe.request.get_json()
+        
+    # Check if peek mode is enabled
+    if request_data and request_data.get('peek', False):
+        return { 'schema': schema }
 
     # Remove 'tab' prefix from table names
     schema = {k.removeprefix('tab'): v for k, v in schema.items()}
@@ -97,7 +107,7 @@ def ai_suggest():
     local_server_url = os.getenv('LOCAL_SERVER_URL')
     response = requests.post(f'{local_server_url}/api/ai-suggest', json=data, stream=True)
     def stream_generator():
-        for chunk in response.iter_content(chunk_size=None):
+        for chunk in response.iter_content(chunk_size=1024):
             yield chunk
 
     return Response(stream_generator(), content_type='application/json') 
@@ -162,10 +172,14 @@ def ai_query():
 
     response = requests.post(f'{local_server_url}/api/ai-query', json=data, stream=True)
     def stream_generator():
-        for chunk in response.iter_content(chunk_size=None):
+        for chunk in response.iter_content(chunk_size=1024):
             yield chunk 
 
     return Response(stream_generator(), content_type='application/json') 
+
+@frappe.whitelist(allow_guest=True)
+def schema_ai_query():
+    pass
     
 @frappe.whitelist(allow_guest=True)
 def stream_numbers():
